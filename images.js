@@ -1,1 +1,1 @@
-const IMAGES = [{"label":"Banana","src":"/galeria-jorge/frutas/banana.png"},{"label":"Laranja","src":"/galeria-jorge/frutas/laranja.png"}];
+const IMAGES = [{"label":"banana","src":"/galeria-jorge/undefined"},{"label":"laranja","src":"/galeria-jorge/undefined"}];

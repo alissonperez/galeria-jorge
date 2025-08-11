@@ -1,422 +1,328 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Quiz de Imagens</title>
-  <style>
-    :root {
-      --bg: #0f172a;        /* slate-900 */
-      --card: #111827;      /* gray-900 */
-      --muted: #94a3b8;     /* slate-400 */
-      --text: #e5e7eb;      /* gray-200 */
-      --accent: #06b6d4;    /* cyan-500 */
-      --good: #22c55e;      /* green-500 */
-      --bad: #ef4444;       /* red-500 */
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius: 18px;
-    }
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    .wrap {
-      min-height: 100%;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 12px;
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 12px 12px calc(env(safe-area-inset-bottom) + 12px);
-    }
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-    .title {
-      font-weight: 700;
-      font-size: 18px;
-      letter-spacing: .2px;
-    }
-    .progress {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: var(--muted);
-      flex: 1;
-      justify-content: flex-end;
-    }
-    .bar {
-      --h: 6px;
-      inline-size: 120px;
-      block-size: var(--h);
-      background: #1f2937; /* gray-800 */
-      border-radius: 999px;
-      overflow: hidden;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
-    }
-    .bar > i {
-      display: block;
-      block-size: 100%;
-      inline-size: 0%;
-      background: linear-gradient(90deg, var(--accent), #22d3ee);
-      transition: inline-size .3s ease;
-    }
-    .card {
-      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00));
-      border: 1px solid rgba(255,255,255,.06);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      display: grid;
-      grid-template-rows: 1fr auto;
-    }
-    .stage {
-      position: relative;
-      min-height: 52vh;
-      display: grid;
-      place-items: center;
-      background: var(--card);
-    }
-    .imgbox {
-      inline-size: 100%;
-      max-inline-size: 100%;
-      block-size: 100%;
-      display: grid;
-      place-items: center;
-      padding: min(6vw, 18px);
-    }
-    .imgbox img {
-      max-inline-size: 100%;
-      max-block-size: 60vh;
-      object-fit: contain;
-      border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,.35);
-      background: #0b1220;
-    }
-    .overlay-label {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      right: 10px;
-      padding: 10px 12px;
-      backdrop-filter: blur(6px);
-      background: rgba(2,6,23,.6);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 12px;
-      font-size: 14px;
-      color: #e2e8f0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-    .muted { color: var(--muted); }
-
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      padding: 12px;
-      background: rgba(255,255,255,.02);
-      border-top: 1px solid rgba(255,255,255,.06);
-    }
-    button {
-      appearance: none;
-      border: 0;
-      border-radius: 14px;
-      padding: 14px 16px;
-      font-weight: 700;
-      font-size: 16px;
-      letter-spacing: .2px;
-      color: #081016;
-      background: #e2e8f0;
-      box-shadow: 0 8px 18px rgba(0,0,0,.25), inset 0 -2px 0 rgba(0,0,0,.15);
-      cursor: pointer;
-      transition: transform .06s ease, filter .2s ease, background .2s ease;
-      touch-action: manipulation;
-    }
-    button:active { transform: translateY(1px) scale(.99); }
-    .btn-good { background: #16a34a; color: #f0fdf4; }
-    .btn-bad { background: #dc2626; color: #fef2f2; }
-    .btn-ghost {
-      background: transparent; color: var(--muted);
-      border: 1px dashed rgba(148,163,184,.4);
-      box-shadow: none;
-    }
-
-    .footer {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 6px 4px 0; color: var(--muted); font-size: 12px;
-    }
-
-    /* Resultados */
-    .results {
-      text-align: center;
-      padding: 28px 18px 20px;
-    }
-    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 14px 0 6px; }
-    .kpi { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); padding: 14px; border-radius: 14px; }
-    .kpi .val { font-size: 22px; font-weight: 800; }
-    .kpi .lab { font-size: 11px; color: var(--muted); }
-
-    @media (min-width: 520px) {
-      .wrap { padding-top: 18px; }
-      .imgbox img { max-block-size: 70vh; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Quiz de Imagens</title>
+<style>
+  :root{
+    --bg:#0b0d10;
+    --card:#12151a;
+    --muted:#a7b0bf;
+    --txt:#e8eef6;
+    --good:#16a34a;
+    --bad:#dc2626;
+    --ghost:#2a303b;
+    --ring:#1f2937;
+    --bar:#60a5fa;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--txt);
+    font:16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  }
+  .topbar{
+    position:sticky; top:0; z-index:10;
+    display:flex; align-items:center; gap:.75rem;
+    padding:.75rem .875rem; background:rgba(18,21,26,.9); backdrop-filter:saturate(1.2) blur(6px);
+    border-bottom:1px solid var(--ring);
+  }
+  .topbar .spacer{flex:1}
+  .btn-ghost{
+    border:1px solid var(--ghost);
+    background:transparent; color:var(--txt);
+    padding:.5rem .75rem; border-radius:.5rem; cursor:pointer;
+  }
+  .btn-ghost.small{padding:.35rem .6rem; font-size:.9rem}
+  .progress{flex:1; min-width:0}
+  .progress-meta{display:flex; justify-content:flex-end; font-size:.85rem; color:var(--muted); margin-bottom:.25rem}
+  .progress-bar{height:6px; background:#11151b; border-radius:999px; overflow:hidden; border:1px solid var(--ring)}
+  .progress-bar > .inner{height:100%; width:0%; background:var(--bar); transition:width .25s ease}
+  .wrapper{max-width:720px; margin:0 auto; padding:1rem .875rem 6rem}
+  .stage{
+    display:flex; flex-direction:column; gap:.75rem; min-height:50vh;
+    border:1px solid var(--ring); border-radius:.75rem; background:var(--card); padding:.75rem;
+  }
+  .imgbox{
+    position:relative; width:100%; aspect-ratio:1/1; border-radius:.6rem; overflow:hidden;
+    background:#0e131a; display:grid; place-items:center;
+  }
+  .imgbox img{max-width:100%; max-height:100%; width:100%; height:100%; object-fit:cover}
+  .overlay-label{
+    display:flex; justify-content:space-between; align-items:center; gap:.75rem;
+    padding:.25rem .25rem 0;
+  }
+  .muted{color:var(--muted)}
+  #label{font-size:1rem}
+  .controls{
+    position:fixed; left:0; right:0; bottom:0; z-index:5;
+    padding:.875rem; display:flex; gap:.75rem; background:linear-gradient(180deg, rgba(11,13,16,0) 0%, rgba(11,13,16,0.9) 30%, rgba(11,13,16,1) 100%);
+    border-top:1px solid var(--ring);
+  }
+  .btn-good,.btn-bad{
+    flex:1; padding:1rem 1rem; border-radius:.75rem; border:0; cursor:pointer; font-weight:600;
+  }
+  .btn-good{background:var(--good); color:white}
+  .btn-bad{background:var(--bad); color:white}
+  .btn-good:disabled,.btn-bad:disabled,.btn-ghost:disabled{opacity:.6; cursor:not-allowed}
+  .results{display:grid; gap:.75rem; padding:1rem}
+  .results h2{margin:.25rem 0}
+  .kpis{display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem}
+  .kpi{background:#0f1319; border:1px solid var(--ring); border-radius:.75rem; padding:.75rem; text-align:center}
+  .kpi .val{font-size:1.6rem; font-weight:700}
+  .kpi .lab{font-size:.9rem; color:var(--muted)}
+  @media (min-width:480px){
+    .imgbox{aspect-ratio:4/3}
+  }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="title">Quiz de Imagens</div>
-      <div class="progress" aria-live="polite">
-        <div class="bar" aria-hidden="true"><i id="bar"></i></div>
-        <span id="counter">0/10</span>
-      </div>
-    </header>
-
-    <main class="card" role="region" aria-label="Área do quiz">
-      <div class="stage">
-        <div class="imgbox" id="imgbox">
-          <!-- Imagem é inserida aqui -->
-        </div>
-        <div class="overlay-label">
-          <span id="label" class="muted">Toque em “Mostrar nome” se precisar</span>
-          <button class="btn-ghost" id="revealBtn" aria-controls="label" aria-expanded="false">Mostrar nome</button>
-        </div>
-      </div>
-      <div class="controls" id="controls">
-        <button class="btn-bad" id="btnWrong" aria-label="Marcar como incorreto">Incorreto ✗</button>
-        <button class="btn-good" id="btnRight" aria-label="Marcar como correto">Correto ✓</button>
-      </div>
-    </main>
-
-    <div class="footer">
-      <button class="btn-ghost" id="restartTop">Reiniciar</button>
-      <small>Compatível com celular • Sem bibliotecas</small>
+  <header class="topbar" role="region" aria-label="Barra superior">
+    <button id="restartTop" class="btn-ghost small" aria-label="Reiniciar teste">Reiniciar</button>
+    <div class="spacer"></div>
+    <div class="progress" aria-label="Progresso">
+      <div class="progress-meta"><span id="counter">0/10</span></div>
+      <div class="progress-bar" aria-hidden="true"><div id="bar" class="inner"></div></div>
     </div>
-  </div>
+  </header>
 
-  <script>
-    // === Configure suas 10 imagens aqui =====================================
-    // Substitua src e label pelos seus próprios arquivos/nomes. Pode usar caminhos locais.
-    const IMAGES = [
-      { src: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200", label: "Notebook" },
-      { src: "https://images.unsplash.com/photo-1503602642458-232111445657?w=1200", label: "Fone de ouvido" },
-      { src: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1200", label: "Câmera" },
-      { src: "https://images.unsplash.com/photo-1542293787938-c9e299b88054?w=1200", label: "Tênis" },
-      { src: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200", label: "Mochila" },
-      { src: "https://images.unsplash.com/photo-1526178617590-1aa1b1c4d73c?w=1200", label: "Relógio" },
-      { src: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1200", label: "Caixa de som" },
-      { src: "https://images.unsplash.com/photo-1454165205744-3b78555e5572?w=1200", label: "Caderno" },
-      { src: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=1200", label: "Óculos de sol" },
-      { src: "https://images.unsplash.com/photo-1519160558534-579f5106e33d?w=1200", label: "Carteira" },
-    ];
-    // =========================================================================
+  <main class="wrapper">
+    <section class="stage" aria-live="polite" aria-atomic="true">
+      <!-- A UI base é montada por JS -->
+    </section>
+  </main>
 
-    // Utilitário: embaralhar
-    function shuffle(arr) {
-      const a = arr.slice();
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
+  <footer id="controls" class="controls" aria-label="Controles de resposta">
+    <!-- Botões são montados por JS -->
+  </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // --------- Dados (10 imagens) ----------
+  const IMAGES = [
+    { src: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200", label: "Notebook" },
+    { src: "https://images.unsplash.com/photo-1503602642458-232111445657?w=1200", label: "Fone de ouvido" },
+    { src: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1200", label: "Câmera" },
+    { src: "https://images.unsplash.com/photo-1542293787938-c9e299b88054?w=1200", label: "Tênis" },
+    { src: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200", label: "Mochila" },
+    { src: "https://images.unsplash.com/photo-1526178617590-1aa1b1c4d73c?w=1200", label: "Relógio" },
+    { src: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1200", label: "Caixa de som" },
+    { src: "https://images.unsplash.com/photo-1454165205744-3b78555e5572?w=1200", label: "Caderno" },
+    { src: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=1200", label: "Óculos de sol" },
+    { src: "https://images.unsplash.com/photo-1519160558534-579f5106e33d?w=1200", label: "Carteira" },
+  ];
+
+  // --------- Utilidades ----------
+  function shuffle(arr){
+    const a = arr.slice();
+    for (let i=a.length-1; i>0; i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+  function preload(srcs){ srcs.forEach(src => { const img = new Image(); img.src = src; }); }
+
+  // --------- Estado ----------
+  const state = { order: [], index: 0, right: 0, wrong: 0, revealed: false };
+
+  // Referências fixas do layout
+  let counter, bar, restartTop;
+
+  // Referências reconstruídas a cada init()
+  let imgbox, labelEl, revealBtn, btnRight, btnWrong;
+
+  function cacheStaticElements(){
+    counter = document.getElementById('counter');
+    bar = document.getElementById('bar');
+    restartTop = document.getElementById('restartTop');
+
+    if(!counter || !bar || !restartTop){
+      throw new Error('Estrutura HTML ausente: verifique #counter, #bar, #restartTop.');
+    }
+    restartTop.addEventListener('click', init);
+  }
+
+  function buildBaseUI(){
+    const stage = document.querySelector('.stage');
+    const controls = document.getElementById('controls');
+
+    stage.innerHTML = `
+      <div class="imgbox" id="imgbox"></div>
+      <div class="overlay-label">
+        <span id="label" class="muted">Toque em “Mostrar nome” se precisar</span>
+        <button class="btn-ghost" id="revealBtn" aria-controls="label" aria-expanded="false">Mostrar nome</button>
+      </div>
+    `;
+    controls.innerHTML = `
+      <button class="btn-bad" id="btnWrong" aria-label="Marcar como incorreto">Incorreto ✗</button>
+      <button class="btn-good" id="btnRight" aria-label="Marcar como correto">Correto ✓</button>
+    `;
+
+    imgbox   = document.getElementById('imgbox');
+    labelEl  = document.getElementById('label');
+    revealBtn= document.getElementById('revealBtn');
+    btnRight = document.getElementById('btnRight');
+    btnWrong = document.getElementById('btnWrong');
+
+    if(!imgbox || !labelEl || !revealBtn || !btnRight || !btnWrong){
+      throw new Error('Estrutura dinâmica ausente: verifique #imgbox, #label, #revealBtn, #btnRight, #btnWrong.');
     }
 
-    // Pré-carregar imagens para UX mais suave
-    function preload(srcs) {
-      srcs.forEach(src => { const img = new Image(); img.src = src; });
-    }
-
-    const state = {
-      order: [],
-      index: 0,
-      right: 0,
-      wrong: 0,
-      revealed: false,
-    };
-
-    const imgbox = document.getElementById('imgbox');
-    const labelEl = document.getElementById('label');
-    const revealBtn = document.getElementById('revealBtn');
-    const btnRight = document.getElementById('btnRight');
-    const btnWrong = document.getElementById('btnWrong');
-    const counter = document.getElementById('counter');
-    const bar = document.getElementById('bar');
-    const restartTop = document.getElementById('restartTop');
-
-    function init() {
-      state.order = shuffle(IMAGES);
-      state.index = 0;
-      state.right = 0;
-      state.wrong = 0;
-      state.revealed = false;
-      preload(state.order.map(i => i.src));
-      renderCurrent();
-      updateProgress();
-      setControlsEnabled(true);
-    }
-
-    function setControlsEnabled(enabled) {
-      btnRight.disabled = !enabled;
-      btnWrong.disabled = !enabled;
-      revealBtn.disabled = !enabled;
-    }
-
-    function updateProgress() {
-      const total = state.order.length;
-      const current = Math.min(state.index + 1, total);
-      counter.textContent = `${state.index < total ? current : total}/${total}`;
-      const pct = Math.min((state.index) / total * 100, 100);
-      bar.style.inlineSize = `${pct}%`;
-    }
-
-    function renderCurrent() {
-      const total = state.order.length;
-      if (state.index >= total) return renderResults();
-
-      const item = state.order[state.index];
-      imgbox.innerHTML = '';
-      const img = document.createElement('img');
-      img.alt = `Item ${state.index + 1} de ${total}`;
-      img.decoding = 'async';
-      img.loading = 'eager';
-      img.src = item.src;
-      imgbox.appendChild(img);
-
-      labelEl.textContent = 'Toque em “Mostrar nome” se precisar';
-      labelEl.classList.add('muted');
-      state.revealed = false;
-      revealBtn.setAttribute('aria-expanded', 'false');
-      revealBtn.textContent = 'Mostrar nome';
-    }
-
-    function reveal() {
-      if (state.index >= state.order.length) return;
-      const name = state.order[state.index].label || '—';
-      labelEl.textContent = name;
-      labelEl.classList.remove('muted');
-      state.revealed = true;
-      revealBtn.setAttribute('aria-expanded', 'true');
-      revealBtn.textContent = 'Ocultar nome';
-    }
-
-    function hideReveal() {
-      labelEl.textContent = 'Toque em “Mostrar nome” se precisar';
-      labelEl.classList.add('muted');
-      state.revealed = false;
-      revealBtn.setAttribute('aria-expanded', 'false');
-      revealBtn.textContent = 'Mostrar nome';
-    }
-
-    function onRevealToggle() {
-      if (state.revealed) hideReveal(); else reveal();
-    }
-
-    function mark(isRight) {
-      if (state.index >= state.order.length) return;
-      if (isRight) state.right++; else state.wrong++;
-      state.index++;
-      updateProgress();
-      if (state.index >= state.order.length) {
-        renderResults();
-      } else {
-        renderCurrent();
-      }
-    }
-
-    function renderResults() {
-      setControlsEnabled(false);
-      const total = state.order.length;
-      const pct = total ? Math.round((state.right / total) * 100) : 0;
-
-      const results = document.createElement('section');
-      results.className = 'results';
-      results.innerHTML = `
-        <h2 style="margin:0 0 8px;font-size:22px">Concluído</h2>
-        <p class=\"muted\" style=\"margin:0 0 16px\">Resumo do seu desempenho</p>
-        <div class=\"kpis\">
-          <div class=\"kpi\"><div class=\"val\">${state.right}</div><div class=\"lab\">Corretas</div></div>
-          <div class=\"kpi\"><div class=\"val\">${state.wrong}</div><div class=\"lab\">Incorretas</div></div>
-          <div class=\"kpi\"><div class=\"val\">${pct}%</div><div class=\"lab\">Precisão</div></div>
-        </div>
-        <div style=\"margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap\">
-          <button class=\"btn-good\" id=\"restartBtn\">Reiniciar teste</button>
-          <button class=\"btn-ghost\" id=\"reviewBtn\">Revisar itens</button>
-        </div>
-      `;
-
-      const stage = document.querySelector('.stage');
-      stage.innerHTML = '';
-      stage.appendChild(results);
-
-      const controls = document.getElementById('controls');
-      controls.innerHTML = '';
-
-      document.getElementById('restartBtn').addEventListener('click', init);
-      document.getElementById('reviewBtn').addEventListener('click', renderReview);
-
-      bar.style.inlineSize = '100%';
-      counter.textContent = `${total}/${total}`;
-    }
-
-    function renderReview() {
-      const stage = document.querySelector('.stage');
-      stage.innerHTML = '';
-      const list = document.createElement('div');
-      list.style.padding = '12px';
-      list.style.display = 'grid';
-      list.style.gridTemplateColumns = '1fr 1fr';
-      list.style.gap = '10px';
-      state.order.forEach((item, idx) => {
-        const card = document.createElement('div');
-        card.style.border = '1px solid rgba(255,255,255,.08)';
-        card.style.borderRadius = '12px';
-        card.style.overflow = 'hidden';
-        card.style.background = 'rgba(255,255,255,.03)';
-        card.innerHTML = `
-          <img src="${item.src}" alt="${item.label}" style="width:100%;height:110px;object-fit:cover;display:block;background:#0b1220" />
-          <div style="padding:8px 10px;font-size:13px;letter-spacing:.2px">${idx+1}. ${item.label}</div>
-        `;
-        list.appendChild(card);
-      });
-      stage.appendChild(list);
-
-      const controls = document.getElementById('controls');
-      controls.innerHTML = '';
-      const back = document.createElement('button');
-      back.className = 'btn-ghost';
-      back.textContent = 'Voltar aos resultados';
-      back.addEventListener('click', renderResults);
-      controls.appendChild(back);
-    }
-
-    // Ligações de eventos
     revealBtn.addEventListener('click', onRevealToggle);
     btnRight.addEventListener('click', () => mark(true));
     btnWrong.addEventListener('click', () => mark(false));
-    restartTop.addEventListener('click', init);
+  }
 
-    // Atalhos de teclado (desktop): setas esquerda/direita, espaço e R
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowRight') { mark(true); }
-      if (e.key === 'ArrowLeft') { mark(false); }
-      if (e.key?.toLowerCase() === 'r') { init(); }
-      if (e.key === ' ') { e.preventDefault(); onRevealToggle(); }
-    });
+  function init(){
+    buildBaseUI();
+    state.order = shuffle(IMAGES);
+    state.index = 0;
+    state.right = 0;
+    state.wrong = 0;
+    state.revealed = false;
+    preload(state.order.map(i => i.src));
+    renderCurrent();
+    updateProgress();
+    setControlsEnabled(true);
+  }
 
-    // Inicializa
-    init();
-  </script>
+  function setControlsEnabled(enabled){
+    btnRight.disabled = !enabled;
+    btnWrong.disabled = !enabled;
+    revealBtn.disabled = !enabled;
+  }
+
+  function updateProgress(){
+    const total = state.order.length;
+    const current = Math.min(state.index + 1, total);
+    counter.textContent = `${state.index < total ? current : total}/${total}`;
+    const pct = Math.min((state.index / total) * 100, 100);
+    bar.style.width = pct + '%';
+  }
+
+  function renderCurrent(){
+    if (state.index >= state.order.length) return renderResults();
+    const item = state.order[state.index];
+    imgbox.innerHTML = '';
+    const img = document.createElement('img');
+    img.alt = `Item ${state.index + 1} de ${state.order.length}`;
+    img.src = item.src;
+    imgbox.appendChild(img);
+
+    labelEl.textContent = 'Toque em “Mostrar nome” se precisar';
+    labelEl.classList.add('muted');
+    state.revealed = false;
+    revealBtn.setAttribute('aria-expanded', 'false');
+    revealBtn.textContent = 'Mostrar nome';
+  }
+
+  function reveal(){
+    labelEl.textContent = state.order[state.index].label || '—';
+    labelEl.classList.remove('muted');
+    state.revealed = true;
+    revealBtn.setAttribute('aria-expanded', 'true');
+    revealBtn.textContent = 'Ocultar nome';
+  }
+
+  function hideReveal(){
+    labelEl.textContent = 'Toque em “Mostrar nome” se precisar';
+    labelEl.classList.add('muted');
+    state.revealed = false;
+    revealBtn.setAttribute('aria-expanded', 'false');
+    revealBtn.textContent = 'Mostrar nome';
+  }
+
+  function onRevealToggle(){ state.revealed ? hideReveal() : reveal(); }
+
+  function mark(isRight){
+    if (isRight) state.right++; else state.wrong++;
+    state.index++;
+    updateProgress();
+    state.index >= state.order.length ? renderResults() : renderCurrent();
+  }
+
+  function renderResults(){
+    setControlsEnabled(false);
+    const total = state.order.length;
+    const pct = total ? Math.round((state.right / total) * 100) : 0;
+
+    const results = document.createElement('section');
+    results.className = 'results';
+    results.innerHTML = `
+      <h2>Concluído</h2>
+      <p class="muted">Resumo do seu desempenho</p>
+      <div class="kpis">
+        <div class="kpi"><div class="val">${state.right}</div><div class="lab">Corretas</div></div>
+        <div class="kpi"><div class="val">${state.wrong}</div><div class="lab">Incorretas</div></div>
+        <div class="kpi"><div class="val">${pct}%</div><div class="lab">Precisão</div></div>
+      </div>
+      <button class="btn-good" id="restartBtn">Reiniciar teste</button>
+    `;
+
+    const stage = document.querySelector('.stage');
+    stage.innerHTML = '';
+    stage.appendChild(results);
+    document.getElementById('controls').innerHTML = '';
+
+    const restartBtn = document.getElementById('restartBtn');
+    restartBtn.addEventListener('click', init);
+
+    bar.style.width = '100%';
+    counter.textContent = `${total}/${total}`;
+  }
+
+  // --------- Autotestes opcionais (abra com ?test=1) ----------
+  function runTests(){
+    const url = new URL(window.location.href);
+    const t = url.searchParams.get('test');
+    if(!t) return;
+
+    console.info('[TEST] Iniciando testes automáticos...');
+
+    // Teste 1: elementos fixos
+    console.assert(document.getElementById('restartTop'), '#restartTop ausente');
+    console.assert(document.getElementById('counter'), '#counter ausente');
+    console.assert(document.getElementById('bar'), '#bar ausente');
+    console.assert(document.querySelector('.stage'), '.stage ausente');
+    console.assert(document.getElementById('controls'), '#controls ausente');
+
+    // Teste 2: após init, imagem presente
+    console.assert(document.querySelector('#imgbox img'), 'Imagem inicial não renderizada');
+
+    // Teste 3: toggle do revelar
+    const before = document.getElementById('label').textContent;
+    document.getElementById('revealBtn').click();
+    const after = document.getElementById('label').textContent;
+    console.assert(before !== after, 'Revelar não alterou o texto do rótulo');
+
+    // Teste 4: avançar uma questão
+    const firstSrc = document.querySelector('#imgbox img').src;
+    document.getElementById('btnRight').click();
+    const secondSrc = document.querySelector('#imgbox img').src;
+    console.assert(firstSrc !== secondSrc, 'Clique em correto não avançou para próxima imagem');
+
+    // Teste 5: completar o fluxo
+    for(let i=0;i<20;i++){ // garante finalizar, mesmo se já estivermos perto do fim
+      const btn = document.getElementById('btnRight');
+      if(!btn) break;
+      btn.click();
+    }
+    console.assert(document.querySelector('.results'), 'Tela de resultados não foi exibida');
+    console.assert(document.getElementById('restartBtn'), 'Botão Reiniciar (resultados) não existe');
+
+    document.getElementById('restartBtn').click();
+    console.assert(document.querySelector('#imgbox img'), 'Após reiniciar, imagem não foi exibida');
+    console.info('[TEST] OK');
+  }
+
+  cacheStaticElements();
+  init();
+  runTests();
+});
+</script>
 </body>
 </html>
